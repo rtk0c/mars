@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Vector;
 
@@ -297,7 +298,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
     // set action in the menu bar.
     private void createActionObjects() {
         Toolkit tk = Toolkit.getDefaultToolkit();
-        Class cs = this.getClass();
+        Class<?> cs = this.getClass();
         try {
             runAssembleAction = new RunAssembleAction("Assemble",
                     new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath + "Assemble22.png"))),
@@ -584,7 +585,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
         }
 
         // import the list of opcodes of mips set of instructions
-        public void importXmlStringData(String xmlName, HashMap table, String elementTree, String tagId, String tagData) {
+        public void importXmlStringData(String xmlName, Map<String, String> table, String elementTree, String tagId, String tagData) {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(false);
             DocumentBuilder docBuilder;

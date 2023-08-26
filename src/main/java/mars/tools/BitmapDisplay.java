@@ -50,7 +50,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
     private static String heading = "Bitmap Display";
 
     // Major GUI components
-    private JComboBox visualizationUnitPixelWidthSelector, visualizationUnitPixelHeightSelector,
+    private JComboBox<String> visualizationUnitPixelWidthSelector, visualizationUnitPixelHeightSelector,
             visualizationPixelWidthSelector, visualizationPixelHeightSelector, displayBaseAddressSelector;
     private Graphics drawingArea;
     private JPanel canvas;
@@ -273,7 +273,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
     private JComponent buildOrganizationArea() {
         JPanel organization = new JPanel(new GridLayout(8, 1));
 
-        visualizationUnitPixelWidthSelector = new JComboBox(visualizationUnitPixelWidthChoices);
+        visualizationUnitPixelWidthSelector = new JComboBox<>(visualizationUnitPixelWidthChoices);
         visualizationUnitPixelWidthSelector.setEditable(false);
         visualizationUnitPixelWidthSelector.setBackground(backgroundColor);
         visualizationUnitPixelWidthSelector.setSelectedIndex(defaultVisualizationUnitPixelWidthIndex);
@@ -286,7 +286,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
                         updateDisplay();
                     }
                 });
-        visualizationUnitPixelHeightSelector = new JComboBox(visualizationUnitPixelHeightChoices);
+        visualizationUnitPixelHeightSelector = new JComboBox<>(visualizationUnitPixelHeightChoices);
         visualizationUnitPixelHeightSelector.setEditable(false);
         visualizationUnitPixelHeightSelector.setBackground(backgroundColor);
         visualizationUnitPixelHeightSelector.setSelectedIndex(defaultVisualizationUnitPixelHeightIndex);
@@ -299,7 +299,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
                         updateDisplay();
                     }
                 });
-        visualizationPixelWidthSelector = new JComboBox(displayAreaPixelWidthChoices);
+        visualizationPixelWidthSelector = new JComboBox<>(displayAreaPixelWidthChoices);
         visualizationPixelWidthSelector.setEditable(false);
         visualizationPixelWidthSelector.setBackground(backgroundColor);
         visualizationPixelWidthSelector.setSelectedIndex(defaultDisplayWidthIndex);
@@ -314,7 +314,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
                         updateDisplay();
                     }
                 });
-        visualizationPixelHeightSelector = new JComboBox(displayAreaPixelHeightChoices);
+        visualizationPixelHeightSelector = new JComboBox<>(displayAreaPixelHeightChoices);
         visualizationPixelHeightSelector.setEditable(false);
         visualizationPixelHeightSelector.setBackground(backgroundColor);
         visualizationPixelHeightSelector.setSelectedIndex(defaultDisplayHeightIndex);
@@ -329,7 +329,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
                         updateDisplay();
                     }
                 });
-        displayBaseAddressSelector = new JComboBox(displayBaseAddressChoices);
+        displayBaseAddressSelector = new JComboBox<>(displayBaseAddressChoices);
         displayBaseAddressSelector.setEditable(false);
         displayBaseAddressSelector.setBackground(backgroundColor);
         displayBaseAddressSelector.setSelectedIndex(defaultBaseAddressIndex);
@@ -444,7 +444,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
     // Will return int equivalent of specified combo box's current selection.
     // The selection must be a String that parses to an int.
-    private int getIntComboBoxSelection(JComboBox comboBox) {
+    private int getIntComboBoxSelection(JComboBox<String> comboBox) {
         try {
             return Integer.parseInt((String) comboBox.getSelectedItem());
         } catch (NumberFormatException nfe) {
