@@ -8,9 +8,7 @@ import mars.simulator.*;
 
 import java.io.*;
 import java.util.*;
-import java.awt.*;
 import javax.swing.*;
-import javax.swing.JOptionPane;   // KENV 9/8/2004
 
 /*
 Copyright (c) 2003-2012,  Pete Sanderson and Kenneth Vollmar
@@ -114,15 +112,15 @@ public class MarsLaunch {
     private static final int DECIMAL = 0; // memory and register display format
     private static final int HEXADECIMAL = 1;// memory and register display format
     private static final int ASCII = 2;// memory and register display format
-    private ArrayList registerDisplayList;
-    private ArrayList memoryDisplayList;
-    private ArrayList filenameList;
+    private ArrayList<String> registerDisplayList;
+    private ArrayList<String> memoryDisplayList;
+    private ArrayList<String> filenameList;
     private MIPSprogram code;
     private int maxSteps;
     private int instructionCount;
     private PrintStream out; // stream for display of command line output
-    private ArrayList dumpTriples = null; // each element holds 3 arguments for dump option
-    private ArrayList programArgumentList; // optional program args for MIPS program (becomes argc, argv)
+    private ArrayList<String[]> dumpTriples = null; // each element holds 3 arguments for dump option
+    private ArrayList<String> programArgumentList; // optional program args for MIPS program (becomes argc, argv)
     private int assembleErrorExitCode;  // MARS command exit code to return if assemble error occurs
     private int simulateErrorExitCode;// MARS command exit code to return if simulation error occurs
 
@@ -273,7 +271,7 @@ public class MarsLaunch {
             // that will become "argc" and "argv" for the MIPS program.
             if (inProgramArgumentList) {
                 if (programArgumentList == null) {
-                    programArgumentList = new ArrayList();
+                    programArgumentList = new ArrayList<>();
                 }
                 programArgumentList.add(args[i]);
                 continue;
@@ -298,7 +296,7 @@ public class MarsLaunch {
                     argsOK = false;
                 } else {
                     if (dumpTriples == null)
-                        dumpTriples = new ArrayList();
+                        dumpTriples = new ArrayList<>();
                     dumpTriples.add(new String[]{args[++i], args[++i], args[++i]});
                     // simulate = false;
                 }
@@ -454,14 +452,14 @@ public class MarsLaunch {
             Globals.getSettings().setBooleanSettingNonPersistent(Settings.DELAYED_BRANCHING_ENABLED, delayedBranching);
             Globals.getSettings().setBooleanSettingNonPersistent(Settings.SELF_MODIFYING_CODE_ENABLED, selfModifyingCode);
             File mainFile = new File((String) filenameList.get(0)).getAbsoluteFile();// First file is "main" file
-            ArrayList filesToAssemble;
+            ArrayList<String> filesToAssemble;
             if (assembleProject) {
                 filesToAssemble = FilenameFinder.getFilenameList(mainFile.getParent(), Globals.fileExtensions);
                 if (filenameList.size() > 1) {
                     // Using "p" project option PLUS listing more than one filename on command line.
                     // Add the additional files, avoiding duplicates.
                     filenameList.remove(0); // first one has already been processed
-                    ArrayList moreFilesToAssemble = FilenameFinder.getFilenameList(filenameList, FilenameFinder.MATCH_ALL_EXTENSIONS);
+                    ArrayList<String> moreFilesToAssemble = FilenameFinder.getFilenameList(filenameList, FilenameFinder.MATCH_ALL_EXTENSIONS);
                     // Remove any duplicates then merge the two lists.
                     for (int index2 = 0; index2 < moreFilesToAssemble.size(); index2++) {
                         for (int index1 = 0; index1 < filesToAssemble.size(); index1++) {
@@ -480,7 +478,7 @@ public class MarsLaunch {
             if (Globals.debug) {
                 out.println("--------  TOKENIZING BEGINS  -----------");
             }
-            ArrayList MIPSprogramsToAssemble =
+            ArrayList<MIPSprogram> MIPSprogramsToAssemble =
                     code.prepareFilesForAssembly(filesToAssemble, mainFile.getAbsolutePath(), null);
             if (Globals.debug) {
                 out.println("--------  ASSEMBLY BEGINS  -----------");
