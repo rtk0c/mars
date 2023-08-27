@@ -71,7 +71,7 @@ public class OperandFormat {
      * first such Instruction that has an exact operand match.  If none match,
      * return the first Instruction and let client deal with operand mismatches.
      */
-    static Instruction bestOperandMatch(TokenList tokenList, ArrayList instrMatches) {
+    static Instruction bestOperandMatch(TokenList tokenList, ArrayList<Instruction> instrMatches) {
         if (instrMatches == null)
             return null;
         if (instrMatches.size() == 1)

@@ -154,7 +154,8 @@ public final class TokenTypes {
 
             int i = Binary.stringToInt(value);   // KENV 1/6/05
 
-            /***************************************************************************
+            /*
+             ***************************************************************************
              *  MODIFICATION AND COMMENT, DPS 3-July-2008
              *
              * The modifications of January 2005 documented below are being rescinded.
