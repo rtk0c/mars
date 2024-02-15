@@ -1,8 +1,11 @@
 [![Build Status](https://travis-ci.org/carlosrabelo/mars.png)](https://travis-ci.org/carlosrabelo/mars)
 
-## MARS (MIPS Assembler and Runtime Simulator) 
+# MARS Re-terraformed
+This is rtk0c's personal fork of MARS, with a set of changes unlikely/takes too long to be accepted upstream. An IntelliJ Idea buildsystem is also included in parallel with upstream's Gradle, intending for quicker iteration cycles. The `fork` branch corresponds to this custom form. The `master` branch which corresponds to upstream. Feature branches from `master` are intended to be submitted upstream.
 
-### An IDE for MIPS Assembly Language Programming
+# MARS (MIPS Assembler and Runtime Simulator)
+
+## An IDE for MIPS Assembly Language Programming
 
 MARS has been jointly developed by Pete Sanderson (programming) and Ken Vollmar (details and paperwork).
 
