@@ -1439,15 +1439,14 @@ public class InstructionSet {
                                     || floatValue > (float) Integer.MAX_VALUE) {
                                     round = Integer.MAX_VALUE;
                                 } else {
-                                    Float floatObj = new Float(floatValue);
                                     // If we are EXACTLY in the middle, then round to even!  To determine this,
                                     // find next higher integer and next lower integer, then see if distances
                                     // are exactly equal.
                                     if (floatValue < 0.0F) {
-                                        above = floatObj.intValue(); // truncates
+                                        above = (int) floatValue; // truncates
                                         below = above - 1;
                                     } else {
-                                        below = floatObj.intValue(); // truncates
+                                        below = (int) floatValue; // truncates
                                         above = below + 1;
                                     }
                                     if (floatValue - below == above - floatValue) { // exactly in the middle?
@@ -1666,15 +1665,14 @@ public class InstructionSet {
                                     || doubleValue > (double) Integer.MAX_VALUE) {
                                     round = Integer.MAX_VALUE;
                                 } else {
-                                    Double doubleObj = new Double(doubleValue);
                                     // If we are EXACTLY in the middle, then round to even!  To determine this,
                                     // find next higher integer and next lower integer, then see if distances
                                     // are exactly equal.
                                     if (doubleValue < 0.0) {
-                                        above = doubleObj.intValue(); // truncates
+                                        above = (int) doubleValue; // truncates
                                         below = above - 1;
                                     } else {
-                                        below = doubleObj.intValue(); // truncates
+                                        below = (int) doubleValue; // truncates
                                         above = below + 1;
                                     }
                                     if (doubleValue - below == above - doubleValue) { // exactly in the middle?

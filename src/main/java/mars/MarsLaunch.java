@@ -177,14 +177,14 @@ public class MarsLaunch {
         for (int i = 0; i < dumpTriples.size(); i++) {
             String[] triple = (String[]) dumpTriples.get(i);
             File file = new File(triple[2]);
-            Integer[] segInfo = MemoryDump.getSegmentBounds(triple[0]);
+            int[] segInfo = MemoryDump.getSegmentBounds(triple[0]);
             // If not segment name, see if it is address range instead.  DPS 14-July-2008
             if (segInfo == null) {
                 try {
                     String[] memoryRange = checkMemoryAddressRange(triple[0]);
-                    segInfo = new Integer[2];
-                    segInfo[0] = new Integer(Binary.stringToInt(memoryRange[0])); // low end of range
-                    segInfo[1] = new Integer(Binary.stringToInt(memoryRange[1])); // high end of range
+                    segInfo = new int[2];
+                    segInfo[0] = Binary.stringToInt(memoryRange[0]); // low end of range
+                    segInfo[1] = Binary.stringToInt(memoryRange[1]); // high end of range
                 } catch (NumberFormatException nfe) {
                     segInfo = null;
                 } catch (NullPointerException npe) {
@@ -203,12 +203,12 @@ public class MarsLaunch {
                 continue;
             }
             try {
-                int highAddress = Globals.memory.getAddressOfFirstNull(segInfo[0].intValue(), segInfo[1].intValue()) - Memory.WORD_LENGTH_BYTES;
-                if (highAddress < segInfo[0].intValue()) {
+                int highAddress = Globals.memory.getAddressOfFirstNull(segInfo[0], segInfo[1]) - Memory.WORD_LENGTH_BYTES;
+                if (highAddress < segInfo[0]) {
                     out.println("This segment has not been written to, there is nothing to dump.");
                     continue;
                 }
-                format.dumpMemoryRange(file, segInfo[0].intValue(), highAddress);
+                format.dumpMemoryRange(file, segInfo[0], highAddress);
             } catch (FileNotFoundException e) {
                 out.println("Error while attempting to save dump, file " + file + " was not found!");
                 continue;

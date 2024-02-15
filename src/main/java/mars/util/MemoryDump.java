@@ -63,12 +63,12 @@ public class MemoryDump {
      * name does not match a known segment name.
      */
 
-    public static Integer[] getSegmentBounds(String segment) {
+    public static int[] getSegmentBounds(String segment) {
         for (int i = 0; i < segmentNames.length; i++) {
             if (segmentNames[i].equals(segment)) {
-                Integer[] bounds = new Integer[2];
-                bounds[0] = new Integer(getBaseAddresses(segmentNames)[i]);
-                bounds[1] = new Integer(getLimitAddresses(segmentNames)[i]);
+                int[] bounds = new int[2];
+                bounds[0] = getBaseAddresses(segmentNames)[i];
+                bounds[1] = getLimitAddresses(segmentNames)[i];
                 return bounds;
             }
         }

@@ -787,7 +787,7 @@ public class Memory extends Observable {
             value = fetchWordOrNullFromTable(stackBlockTable, relative);
         } else if (inTextSegment(address) || inKernelTextSegment(address)) {
             try {
-                value = (getStatementNoNotify(address) == null) ? null : new Integer(getStatementNoNotify(address).getBinaryStatement());
+                value = (getStatementNoNotify(address) == null) ? null : getStatementNoNotify(address).getBinaryStatement();
             } catch (AddressErrorException aee) {
                 value = null;
             }
@@ -1406,7 +1406,7 @@ public class Memory extends Observable {
         } else {
             value = blockTable[block][offset];
         }
-        return new Integer(value);
+        return value;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////

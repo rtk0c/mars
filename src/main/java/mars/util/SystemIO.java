@@ -100,7 +100,7 @@ public class SystemIO {
         }
 
         // Client is responsible for catching NumberFormatException
-        return new Integer(input.trim()).intValue();
+        return Integer.parseInt(input.trim());
     }
 
 
@@ -127,7 +127,7 @@ public class SystemIO {
                 input = Globals.getGui().getMessagesPane().getInputString(-1);
             }
         }
-        return new Float(input.trim()).floatValue();
+        return Float.parseFloat(input.trim());
 
     }
 
@@ -155,7 +155,7 @@ public class SystemIO {
                 input = Globals.getGui().getMessagesPane().getInputString(-1);
             }
         }
-        return new Double(input.trim()).doubleValue();
+        return Double.parseDouble(input.trim());
 
     }
 
