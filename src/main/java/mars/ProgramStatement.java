@@ -255,7 +255,8 @@ public class ProgramStatement {
 
                 int tempNumeric = Binary.stringToInt(tokenValue);
 
-                /***************************************************************************
+                /*
+                 ***************************************************************************
                  *  MODIFICATION AND COMMENT, DPS 3-July-2008
                  *
                  * The modifications of January 2005 documented below are being rescinded.
@@ -681,12 +682,12 @@ public class ProgramStatement {
     //
     //  DPS 29-July-2010
 
-    private class BasicStatementList {
+    private static class BasicStatementList {
 
-        private ArrayList list;
+        private final ArrayList<ListElement> list;
 
         BasicStatementList() {
-            list = new ArrayList();
+            list = new ArrayList<>();
         }
 
         void addString(String string) {
@@ -728,7 +729,7 @@ public class ProgramStatement {
             return result.toString();
         }
 
-        private class ListElement {
+        private static class ListElement {
             int type;
             String sValue;
             int iValue;

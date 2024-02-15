@@ -56,7 +56,7 @@ import mars.util.SystemIO;
  **/
 
 public class Assembler {
-    private ArrayList machineList;
+    private ArrayList<ProgramStatement> machineList;
     private ErrorList errors;
     private boolean inDataSegment; // status maintained by parser
     private boolean inMacroSegment; // status maintained by parser, true if in
@@ -86,7 +86,7 @@ public class Assembler {
      * statement.
      * @see ProgramStatement
      **/
-    public ArrayList assemble(MIPSprogram p, boolean extendedAssemblerEnabled)
+    public ArrayList<ProgramStatement> assemble(MIPSprogram p, boolean extendedAssemblerEnabled)
             throws ProcessingException {
         return assemble(p, extendedAssemblerEnabled, false);
     }
@@ -109,9 +109,9 @@ public class Assembler {
      * statement.
      * @see ProgramStatement
      **/
-    public ArrayList assemble(MIPSprogram p, boolean extendedAssemblerEnabled,
-                              boolean warningsAreErrors) throws ProcessingException {
-        ArrayList programFiles = new ArrayList();
+    public ArrayList<ProgramStatement> assemble(MIPSprogram p, boolean extendedAssemblerEnabled,
+                                                boolean warningsAreErrors) throws ProcessingException {
+        ArrayList<MIPSprogram> programFiles = new ArrayList<>();
         programFiles.add(p);
         return this.assemble(programFiles, extendedAssemblerEnabled, warningsAreErrors);
     }
@@ -141,7 +141,7 @@ public class Assembler {
      * statement. Returns null if incoming array list is null or empty.
      * @see ProgramStatement
      **/
-    public ArrayList assemble(ArrayList tokenizedProgramFiles, boolean extendedAssemblerEnabled)
+    public ArrayList<ProgramStatement> assemble(ArrayList<MIPSprogram> tokenizedProgramFiles, boolean extendedAssemblerEnabled)
             throws ProcessingException {
         return assemble(tokenizedProgramFiles, extendedAssemblerEnabled, false);
     }
@@ -165,8 +165,8 @@ public class Assembler {
      * statement. Returns null if incoming array list is null or empty.
      * @see ProgramStatement
      **/
-    public ArrayList assemble(ArrayList tokenizedProgramFiles, boolean extendedAssemblerEnabled,
-                              boolean warningsAreErrors) throws ProcessingException {
+    public ArrayList<ProgramStatement> assemble(ArrayList<MIPSprogram> tokenizedProgramFiles, boolean extendedAssemblerEnabled,
+                                                boolean warningsAreErrors) throws ProcessingException {
 
         if (tokenizedProgramFiles == null || tokenizedProgramFiles.size() == 0)
             return null;
@@ -179,7 +179,7 @@ public class Assembler {
         accumulatedDataSegmentForwardReferences = new DataSegmentForwardReferences();
         Globals.symbolTable.clear();
         Globals.memory.clear();
-        this.machineList = new ArrayList();
+        this.machineList = new ArrayList<>();
         this.errors = new ErrorList();
         if (Globals.debug)
             System.out.println("Assembler first pass begins:");
@@ -209,8 +209,8 @@ public class Assembler {
             // tokenList is an ArrayList of TokenList objects, one per source line;
             // each ArrayList in tokenList consists of Token objects.
             ArrayList<SourceLine> sourceLineList = fileCurrentlyBeingAssembled.getSourceLineList();
-            ArrayList tokenList = fileCurrentlyBeingAssembled.getTokenList();
-            ArrayList parsedList = fileCurrentlyBeingAssembled.createParsedList();
+            ArrayList<TokenList> tokenList = fileCurrentlyBeingAssembled.getTokenList();
+            ArrayList<ProgramStatement> parsedList = fileCurrentlyBeingAssembled.createParsedList();
             // each file keeps its own macro definitions
             MacroPool macroPool = fileCurrentlyBeingAssembled.createMacroPool();
             // FIRST PASS OF ASSEMBLER VERIFIES SYNTAX, GENERATES SYMBOL TABLE,
@@ -269,7 +269,7 @@ public class Assembler {
             if (errors.errorLimitExceeded())
                 break;
             this.fileCurrentlyBeingAssembled = (MIPSprogram) tokenizedProgramFiles.get(fileIndex);
-            ArrayList parsedList = fileCurrentlyBeingAssembled.getParsedList();
+            ArrayList<ProgramStatement> parsedList = fileCurrentlyBeingAssembled.getParsedList();
             ProgramStatement statement;
             for (int i = 0; i < parsedList.size(); i++) {
                 statement = (ProgramStatement) parsedList.get(i);
@@ -309,7 +309,7 @@ public class Assembler {
 
                     // ////////////////////////////////////////////////////////////////////////////
                     // If we are using compact memory config and there is a compact expansion, use it
-                    ArrayList templateList;
+                    ArrayList<String> templateList;
                     if (compactTranslationCanBeApplied(statement)) {
                         templateList = inst.getCompactBasicIntructionTemplateList();
                     } else {
@@ -339,7 +339,7 @@ public class Assembler {
                         // statement, add to list.
                         TokenList newTokenList = new Tokenizer().tokenizeLine(sourceLine,
                                 instruction, errors, false);
-                        ArrayList instrMatches = this.matchInstruction(newTokenList.get(0));
+                        ArrayList<Instruction> instrMatches = this.matchInstruction(newTokenList.get(0));
                         Instruction instr = OperandFormat.bestOperandMatch(newTokenList,
                                 instrMatches);
                         // Only first generated instruction is linked to original source
@@ -400,7 +400,7 @@ public class Assembler {
     // //////////////////////////////////////////////////////////////////////
     // Will check for duplicate text addresses, which can happen inadvertantly when using
     // operand on .text directive. Will generate error message for each one that occurs.
-    private void catchDuplicateAddresses(ArrayList instructions, ErrorList errors) {
+    private void catchDuplicateAddresses(ArrayList<ProgramStatement> instructions, ErrorList errors) {
         for (int i = 0; i < instructions.size() - 1; i++) {
             ProgramStatement ps1 = (ProgramStatement) instructions.get(i);
             ProgramStatement ps2 = (ProgramStatement) instructions.get(i + 1);
@@ -559,7 +559,7 @@ public class Assembler {
         // is not
         // yet implemented.
         if (!this.inDataSegment) {
-            ArrayList instrMatches = this.matchInstruction(token);
+            ArrayList<Instruction> instrMatches = this.matchInstruction(token);
             if (instrMatches == null)
                 return ret;
             // OK, we've got an operator match, let's check the operands.
@@ -900,7 +900,7 @@ public class Assembler {
     // //////////////////////////////////////////////////////////////////////////////////
     // Given token, find the corresponding Instruction object. If token was not
     // recognized as OPERATOR, there is a problem.
-    private ArrayList matchInstruction(Token token) {
+    private ArrayList<Instruction> matchInstruction(Token token) {
         if (token.getType() != TokenTypes.OPERATOR) {
             if (token.getSourceMIPSprogram().getLocalMacroPool()
                     .matchesAnyMacroName(token.getValue()))
@@ -913,7 +913,7 @@ public class Assembler {
                                                                + "\" is not a recognized operator"));
             return null;
         }
-        ArrayList inst = Globals.instructionSet.matchOperator(token.getValue());
+        ArrayList<Instruction> inst = Globals.instructionSet.matchOperator(token.getValue());
         if (inst == null) { // This should NEVER happen...
             this.errors.add(new ErrorMessage(token.getSourceMIPSprogram(), token.getSourceLine(),
                     token.getStartPos(), "Internal Assembler error: \"" + token.getValue()
@@ -981,7 +981,8 @@ public class Assembler {
                     }
                 }
             } // WHAT ABOUT .KDATA SEGMENT?
-            /***************************************************************************
+            /*
+             ***************************************************************************
              * /****** NOTE of 11/20/06. Below will always throw exception b/c
              * you cannot use Memory.set() with text segment addresses and the
              * "not valid address" produced here is misleading. Added data
@@ -1045,7 +1046,8 @@ public class Assembler {
             if (this.inDataSegment) {
                 writeToDataSegment(value, lengthInBytes, token, errors);
             }
-            /******
+            /*
+             ******
              * NOTE of 11/20/06. "try" below will always throw exception b/c you
              * cannot use Memory.set() with text segment addresses and the
              * "not valid address" produced here is misleading. Added data
@@ -1295,14 +1297,14 @@ public class Assembler {
     // ProgramStatements.
     // Sorting is based on unsigned integer value of
     // ProgramStatement.getAddress()
-    private class ProgramStatementComparator implements Comparator {
+    private static class ProgramStatementComparator implements Comparator<ProgramStatement> {
         // Will be used to sort the collection. Unsigned int compare, because
         // all kernel 32-bit
         // addresses have 1 in high order bit, which makes the int negative.
         // "Unsigned" compare
         // is needed when signs of the two operands differ.
-        public int compare(Object obj1, Object obj2) {
-            if (obj1 instanceof ProgramStatement && obj2 instanceof ProgramStatement) {
+        public int compare(ProgramStatement obj1, ProgramStatement obj2) {
+            if (obj1 != null && obj2 != null) {
                 int addr1 = ((ProgramStatement) obj1).getAddress();
                 int addr2 = ((ProgramStatement) obj2).getAddress();
                 return (addr1 < 0 && addr2 >= 0 || addr1 >= 0 && addr2 < 0) ? addr2 : addr1 - addr2;
@@ -1321,7 +1323,7 @@ public class Assembler {
     // Private class to simultaneously track addresses in both user and kernel
     // address spaces.
     // Instantiate one for data segment and one for text segment.
-    private class UserKernelAddressSpace {
+    private static class UserKernelAddressSpace {
         int[] address;
         int currentAddressSpace;
         private final int USER = 0, KERNEL = 1;
@@ -1371,11 +1373,11 @@ public class Assembler {
     // - number of bytes (addresses are 4 bytes but may be used with any of
     // the integer directives: .word, .half, .byte)
     // - the label's token. Normally need only the name but error message needs more.
-    private class DataSegmentForwardReferences {
-        private ArrayList forwardReferenceList;
+    private static class DataSegmentForwardReferences {
+        private final ArrayList<DataSegmentForwardReference> forwardReferenceList;
 
         private DataSegmentForwardReferences() {
-            forwardReferenceList = new ArrayList();
+            forwardReferenceList = new ArrayList<>();
         }
 
         private int size() {

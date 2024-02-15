@@ -43,12 +43,12 @@ public class MemoryDump {
     /**
      * A list of segmentname/dumpformat/filename triples which should be dumped
      */
-    public static ArrayList dumpTriples = null;
+    public static ArrayList<String[]> dumpTriples = null;
 
     /**
      * A mapping from segments names (like ".text") to the base and limit for that segment.
      */
-    private static final HashMap segmentBoundMap = new HashMap();
+    private static final HashMap<?, ?> segmentBoundMap = new HashMap<>();
 
     private static final String[] segmentNames = {".text", ".data"};
     private static int[] baseAddresses = new int[2];
@@ -63,12 +63,12 @@ public class MemoryDump {
      * name does not match a known segment name.
      */
 
-    public static Integer[] getSegmentBounds(String segment) {
+    public static int[] getSegmentBounds(String segment) {
         for (int i = 0; i < segmentNames.length; i++) {
             if (segmentNames[i].equals(segment)) {
-                Integer[] bounds = new Integer[2];
-                bounds[0] = new Integer(getBaseAddresses(segmentNames)[i]);
-                bounds[1] = new Integer(getLimitAddresses(segmentNames)[i]);
+                int[] bounds = new int[2];
+                bounds[0] = getBaseAddresses(segmentNames)[i];
+                bounds[1] = getLimitAddresses(segmentNames)[i];
                 return bounds;
             }
         }

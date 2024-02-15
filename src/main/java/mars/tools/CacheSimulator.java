@@ -52,7 +52,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
     private static String version = "Version 1.2";
     private static String heading = "Simulate and illustrate data cache performance";
     // Major GUI components
-    private JComboBox cacheBlockSizeSelector, cacheBlockCountSelector,
+    private JComboBox<String> cacheBlockSizeSelector, cacheBlockCountSelector,
             cachePlacementSelector, cacheReplacementSelector,
             cacheSetSizeSelector;
     private JTextField memoryAccessCountDisplay, cacheHitCountDisplay, cacheMissCountDisplay,
@@ -185,7 +185,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
         TitledBorder otb = new TitledBorder("Cache Organization");
         otb.setTitleJustification(TitledBorder.CENTER);
         organization.setBorder(otb);
-        cachePlacementSelector = new JComboBox(placementPolicyChoices);
+        cachePlacementSelector = new JComboBox<>(placementPolicyChoices);
         cachePlacementSelector.setEditable(false);
         cachePlacementSelector.setBackground(backgroundColor);
         cachePlacementSelector.setSelectedIndex(defaultPlacementPolicyIndex);
@@ -197,12 +197,12 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
                     }
                 });
 
-        cacheReplacementSelector = new JComboBox(replacementPolicyChoices);
+        cacheReplacementSelector = new JComboBox<>(replacementPolicyChoices);
         cacheReplacementSelector.setEditable(false);
         cacheReplacementSelector.setBackground(backgroundColor);
         cacheReplacementSelector.setSelectedIndex(defaultReplacementPolicyIndex);
 
-        cacheBlockSizeSelector = new JComboBox(cacheBlockSizeChoices);
+        cacheBlockSizeSelector = new JComboBox<>(cacheBlockSizeChoices);
         cacheBlockSizeSelector.setEditable(false);
         cacheBlockSizeSelector.setBackground(backgroundColor);
         cacheBlockSizeSelector.setSelectedIndex(defaultCacheBlockSizeIndex);
@@ -213,7 +213,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
                         reset();
                     }
                 });
-        cacheBlockCountSelector = new JComboBox(cacheBlockCountChoices);
+        cacheBlockCountSelector = new JComboBox<>(cacheBlockCountChoices);
         cacheBlockCountSelector.setEditable(false);
         cacheBlockCountSelector.setBackground(backgroundColor);
         cacheBlockCountSelector.setSelectedIndex(defaultCacheBlockCountIndex);
@@ -229,7 +229,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
                     }
                 });
 
-        cacheSetSizeSelector = new JComboBox(cacheSetSizeChoices);
+        cacheSetSizeSelector = new JComboBox<>(cacheSetSizeChoices);
         cacheSetSizeSelector.setEditable(false);
         cacheSetSizeSelector.setBackground(backgroundColor);
         cacheSetSizeSelector.setSelectedIndex(defaultCacheSetSizeIndex);
@@ -528,7 +528,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
     // Update the Set Size combo box selection in response to other selections..
     private void updateCacheSetSizeSelector() {
         cacheSetSizeSelector.setModel(
-                new DefaultComboBoxModel(determineSetSizeChoices(
+                new DefaultComboBoxModel<>(determineSetSizeChoices(
                         cacheBlockCountSelector.getSelectedIndex(),
                         cachePlacementSelector.getSelectedIndex()
                 )));
@@ -558,15 +558,15 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 
     private void updateMemoryAccessCountDisplay() {
-        memoryAccessCountDisplay.setText(new Integer(memoryAccessCount).toString());
+        memoryAccessCountDisplay.setText(Integer.toString(memoryAccessCount));
     }
 
     private void updateCacheHitCountDisplay() {
-        cacheHitCountDisplay.setText(new Integer(cacheHitCount).toString());
+        cacheHitCountDisplay.setText(Integer.toString(cacheHitCount));
     }
 
     private void updateCacheMissCountDisplay() {
-        cacheMissCountDisplay.setText(new Integer(cacheMissCount).toString());
+        cacheMissCountDisplay.setText(Integer.toString(cacheMissCount));
     }
 
     private void updateCacheHitRateDisplay() {

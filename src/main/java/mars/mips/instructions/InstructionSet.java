@@ -47,22 +47,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 public class InstructionSet {
-    private ArrayList instructionList;
-    private ArrayList opcodeMatchMaps;
+    private ArrayList<Instruction> instructionList;
+    private ArrayList<MatchMap> opcodeMatchMaps;
     private SyscallLoader syscallLoader;
 
     /**
      * Creates a new InstructionSet object.
      */
     public InstructionSet() {
-        instructionList = new ArrayList();
+        instructionList = new ArrayList<>();
 
     }
 
     /**
      * Retrieve the current instruction set.
      */
-    public ArrayList getInstructionList() {
+    public ArrayList<Instruction> getInstructionList() {
         return instructionList;
 
     }
@@ -1439,15 +1439,14 @@ public class InstructionSet {
                                     || floatValue > (float) Integer.MAX_VALUE) {
                                     round = Integer.MAX_VALUE;
                                 } else {
-                                    Float floatObj = new Float(floatValue);
                                     // If we are EXACTLY in the middle, then round to even!  To determine this,
                                     // find next higher integer and next lower integer, then see if distances
                                     // are exactly equal.
                                     if (floatValue < 0.0F) {
-                                        above = floatObj.intValue(); // truncates
+                                        above = (int) floatValue; // truncates
                                         below = above - 1;
                                     } else {
-                                        below = floatObj.intValue(); // truncates
+                                        below = (int) floatValue; // truncates
                                         above = below + 1;
                                     }
                                     if (floatValue - below == above - floatValue) { // exactly in the middle?
@@ -1666,15 +1665,14 @@ public class InstructionSet {
                                     || doubleValue > (double) Integer.MAX_VALUE) {
                                     round = Integer.MAX_VALUE;
                                 } else {
-                                    Double doubleObj = new Double(doubleValue);
                                     // If we are EXACTLY in the middle, then round to even!  To determine this,
                                     // find next higher integer and next lower integer, then see if distances
                                     // are exactly equal.
                                     if (doubleValue < 0.0) {
-                                        above = doubleObj.intValue(); // truncates
+                                        above = (int) doubleValue; // truncates
                                         below = above - 1;
                                     } else {
-                                        below = doubleObj.intValue(); // truncates
+                                        below = (int) doubleValue; // truncates
                                         above = below + 1;
                                     }
                                     if (doubleValue - below == above - doubleValue) { // exactly in the middle?
@@ -2670,17 +2668,17 @@ public class InstructionSet {
             inst.createExampleTokenList();
         }
 
-        HashMap maskMap = new HashMap();
-        ArrayList matchMaps = new ArrayList();
+        HashMap<Integer, HashMap<Integer, BasicInstruction>> maskMap = new HashMap<>();
+        ArrayList<MatchMap> matchMaps = new ArrayList<>();
         for (int i = 0; i < instructionList.size(); i++) {
             Object rawInstr = instructionList.get(i);
             if (rawInstr instanceof BasicInstruction) {
                 BasicInstruction basic = (BasicInstruction) rawInstr;
                 Integer mask = Integer.valueOf(basic.getOpcodeMask());
                 Integer match = Integer.valueOf(basic.getOpcodeMatch());
-                HashMap matchMap = (HashMap) maskMap.get(mask);
+                HashMap<Integer, BasicInstruction> matchMap = maskMap.get(mask);
                 if (matchMap == null) {
-                    matchMap = new HashMap();
+                    matchMap = new HashMap<>();
                     maskMap.put(mask, matchMap);
                     matchMaps.add(new MatchMap(mask, matchMap));
                 }
@@ -2692,7 +2690,7 @@ public class InstructionSet {
     }
 
     public BasicInstruction findByBinaryCode(int binaryInstr) {
-        ArrayList matchMaps = this.opcodeMatchMaps;
+        ArrayList<MatchMap> matchMaps = this.opcodeMatchMaps;
         for (int i = 0; i < matchMaps.size(); i++) {
             MatchMap map = (MatchMap) matchMaps.get(i);
             BasicInstruction ret = map.find(binaryInstr);
@@ -2774,13 +2772,13 @@ public class InstructionSet {
      * @param name operator mnemonic (e.g. addi, sw,...)
      * @return list of corresponding Instruction object(s), or null if not found.
      */
-    public ArrayList matchOperator(String name) {
-        ArrayList matchingInstructions = null;
+    public ArrayList<Instruction> matchOperator(String name) {
+        ArrayList<Instruction> matchingInstructions = null;
         // Linear search for now....
         for (int i = 0; i < instructionList.size(); i++) {
             if (((Instruction) instructionList.get(i)).getName().equalsIgnoreCase(name)) {
                 if (matchingInstructions == null)
-                    matchingInstructions = new ArrayList();
+                    matchingInstructions = new ArrayList<>();
                 matchingInstructions.add(instructionList.get(i));
             }
         }
@@ -2796,14 +2794,14 @@ public class InstructionSet {
      * @param name a string
      * @return list of matching Instruction object(s), or null if none match.
      */
-    public ArrayList prefixMatchOperator(String name) {
-        ArrayList matchingInstructions = null;
+    public ArrayList<Instruction> prefixMatchOperator(String name) {
+        ArrayList<Instruction> matchingInstructions = null;
         // Linear search for now....
         if (name != null) {
             for (int i = 0; i < instructionList.size(); i++) {
                 if (((Instruction) instructionList.get(i)).getName().toLowerCase().startsWith(name.toLowerCase())) {
                     if (matchingInstructions == null)
-                        matchingInstructions = new ArrayList();
+                        matchingInstructions = new ArrayList<>();
                     matchingInstructions.add(instructionList.get(i));
                 }
             }
@@ -2893,12 +2891,12 @@ public class InstructionSet {
                                                       Instruction.INSTRUCTION_LENGTH : 0));
     }
 
-    private static class MatchMap implements Comparable {
+    private static class MatchMap implements Comparable<MatchMap> {
         private int mask;
         private int maskLength; // number of 1 bits in mask
-        private HashMap matchMap;
+        private HashMap<Integer, BasicInstruction> matchMap;
 
-        public MatchMap(int mask, HashMap matchMap) {
+        public MatchMap(int mask, HashMap<Integer, BasicInstruction> matchMap) {
             this.mask = mask;
             this.matchMap = matchMap;
 
@@ -2915,8 +2913,7 @@ public class InstructionSet {
             return o instanceof MatchMap && mask == ((MatchMap) o).mask;
         }
 
-        public int compareTo(Object other) {
-            MatchMap o = (MatchMap) other;
+        public int compareTo(MatchMap o) {
             int d = o.maskLength - this.maskLength;
             if (d == 0) d = this.mask - o.mask;
             return d;
