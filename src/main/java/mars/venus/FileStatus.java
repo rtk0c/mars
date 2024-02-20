@@ -1,8 +1,12 @@
 package mars.venus;
 
 import mars.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.WatchKey;
 
 /*
 Copyright (c) 2003-2006,  Pete Sanderson and Kenneth Vollmar
@@ -229,7 +233,9 @@ public class FileStatus {
 
 
     private int status;
-    private File file;
+    private Path file;
+    @Nullable
+    WatchKey fileWatchKey;
 
     /**
      * Create a FileStatus object with FileStatis.NO_FILE for status and null for file getters.
@@ -242,15 +248,11 @@ public class FileStatus {
      * Create a FileStatus object with given status and file pathname.
      *
      * @param status   Initial file status.  See FileStatus static constants.
-     * @param pathname Full file pathname. See setPathname(String newPath) below.
+     * @param path Full file pathname. See setPathname(String newPath) below.
      */
-    public FileStatus(int status, String pathname) {
+    public FileStatus(int status, Path path) {
         this.status = status;
-        if (pathname == null) {
-            this.file = null;
-        } else {
-            setPathname(pathname);
-        }
+        this.setPath(path);
     }
 
     /**
@@ -291,14 +293,17 @@ public class FileStatus {
         return status == FileStatus.NEW_EDITED || status == FileStatus.EDITED;
     }
 
-    /**
-     * Set full file pathname. See java.io.File(String pathname) for parameter specs.
-     *
-     * @param newPath the new pathname. If no directory path, getParent() will return null.
-     */
-    public void setPathname(String newPath) {
-        this.file = new File(newPath);
+    public Path getPath() {
+        return this.file;
     }
+
+    public void setPath(Path path) {
+        this.file = path;
+    }
+
+    // TODO(rtk0c) yeet all of these stupid setters that do nothing
+    //             in fact, they don't make sense to be called outside EditTabbedPane at all, since that assumes sole ownership of EditPane's current open file path
+    //             in fact in fact, they aren't
 
     /**
      * Set full file pathname. See java.io.File(String parent, String child) for parameter specs.
@@ -306,8 +311,12 @@ public class FileStatus {
      * @param parent the parent directory of the file.  If null, getParent() will return null.
      * @param name   the name of the file (no directory path)
      */
-    public void setPathname(String parent, String name) {
-        this.file = new File(parent, name);
+    public void setPathname(@Nullable String parent, @NotNull String name) {
+        if (parent == null) {
+            this.file = Path.of(name);
+        } else {
+            this.file = Path.of(parent, name);
+        }
     }
 
     /**
@@ -316,7 +325,7 @@ public class FileStatus {
      * @return full pathname as a String.  Null if
      */
     public String getPathname() {
-        return (this.file == null) ? null : this.file.getPath();
+        return (this.file == null) ? null : this.file.toString();
     }
 
     /**
@@ -325,7 +334,7 @@ public class FileStatus {
      * @return filename as a String
      */
     public String getFilename() {
-        return (this.file == null) ? null : this.file.getName();
+        return (this.file == null) ? null : this.file.getFileName().toString();
     }
 
     /**
@@ -334,7 +343,7 @@ public class FileStatus {
      * @return parent full pathname as a String
      */
     public String getParent() {
-        return (this.file == null) ? null : this.file.getParent();
+        return (this.file == null) ? null : this.file.getParent().toString();
     }
 
 
@@ -345,11 +354,11 @@ public class FileStatus {
 
     public void updateStaticFileStatus() {
         systemStatus = this.status;
-        systemName = this.file.getPath();
+        systemName = this.file.toString();
         systemAssembled = false;
         systemSaved = (status == NOT_EDITED || status == RUNNABLE || status == RUNNING || status == TERMINATED);
         systemEdited = (status == NEW_EDITED || status == EDITED);
-        systemFile = this.file;
+        systemFile = this.file.toFile();
 
     }
 

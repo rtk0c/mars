@@ -8,9 +8,7 @@ import mars.venus.editors.jeditsyntax.JEditBasedTextArea;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.undo.*;
-import java.text.*;
 import java.util.*;
 import java.io.*;
 
@@ -55,7 +53,6 @@ public class EditPane extends JPanel implements Observer {
 
     private MARSTextEditingArea sourceCode;
     private VenusUI mainUI;
-    private String currentDirectoryPath;
     private JLabel caretPositionLabel;
     private JCheckBox showLineNumbers;
     private JLabel lineNumbers;
@@ -71,10 +68,9 @@ public class EditPane extends JPanel implements Observer {
     public EditPane(VenusUI appFrame) {
         super(new BorderLayout());
         this.mainUI = appFrame;
-        // user.dir, user's current working directory, is guaranteed to have a value
-        currentDirectoryPath = System.getProperty("user.dir");
         // mainUI.editor = new Editor(mainUI);
         // We want to be notified of editor font changes! See update() below.
+        // TODO(rkt0c): is this a memory leak, a permament backreference from settings
         Globals.getSettings().addObserver(this);
         this.fileStatus = new FileStatus();
         lineNumbers = new JLabel();
@@ -96,7 +92,7 @@ public class EditPane extends JPanel implements Observer {
                         // upon opening, even though not edited by user.  The IF
                         // statement will sense this situation and immediately return.
                         if (FileStatus.get() == FileStatus.OPENING) {
-                            setFileStatus(FileStatus.NOT_EDITED);
+                            getFileStatus().setFileStatus(FileStatus.NOT_EDITED);
                             FileStatus.set(FileStatus.NOT_EDITED);
                             if (showingLineNumbers()) {
                                 lineNumbers.setText(getLineNumbersList(sourceCode.getDocument()));
@@ -104,16 +100,16 @@ public class EditPane extends JPanel implements Observer {
                             return;
                         }
                         // End of 9-Aug-2011 modification.
-                        if (getFileStatus() == FileStatus.NEW_NOT_EDITED) {
-                            setFileStatus(FileStatus.NEW_EDITED);
+                        if (getFileStatus().getFileStatus() == FileStatus.NEW_NOT_EDITED) {
+                            getFileStatus().setFileStatus(FileStatus.NEW_EDITED);
                         }
-                        if (getFileStatus() == FileStatus.NOT_EDITED) {
-                            setFileStatus(FileStatus.EDITED);
+                        if (getFileStatus().getFileStatus() == FileStatus.NOT_EDITED) {
+                            getFileStatus().setFileStatus(FileStatus.EDITED);
                         }
-                        if (getFileStatus() == FileStatus.NEW_EDITED) {
-                            mainUI.editor.setTitle("", getFilename(), getFileStatus());
+                        if (getFileStatus().getFileStatus() == FileStatus.NEW_EDITED) {
+                            mainUI.editor.setTitle("", getFileStatus().getFilename(), getFileStatus().getFileStatus());
                         } else {
-                            mainUI.editor.setTitle(getPathname(), getFilename(), getFileStatus());
+                            mainUI.editor.setTitle(getFileStatus().getPathname(), getFileStatus().getFilename(), getFileStatus().getFileStatus());
                         }
 
                         FileStatus.setEdited(true);
@@ -157,23 +153,20 @@ public class EditPane extends JPanel implements Observer {
         lineNumbers.setVisible(true);
 
         // Listener fires when "Show Line Numbers" check box is clicked.
-        showLineNumbers.addItemListener(
-                new ItemListener() {
-                    public void itemStateChanged(ItemEvent e) {
-                        if (showLineNumbers.isSelected()) {
-                            lineNumbers.setText(getLineNumbersList(sourceCode.getDocument()));
-                            lineNumbers.setVisible(true);
-                        } else {
-                            lineNumbers.setText("");
-                            lineNumbers.setVisible(false);
-                        }
-                        sourceCode.revalidate(); // added 16 Jan 2012 to assure label redrawn.
-                        Globals.getSettings().setEditorLineNumbersDisplayed(showLineNumbers.isSelected());
-                        // needed because caret disappears when checkbox clicked
-                        sourceCode.setCaretVisible(true);
-                        sourceCode.requestFocusInWindow();
-                    }
-                });
+        showLineNumbers.addItemListener(e -> {
+            if (showLineNumbers.isSelected()) {
+                lineNumbers.setText(getLineNumbersList(sourceCode.getDocument()));
+                lineNumbers.setVisible(true);
+            } else {
+                lineNumbers.setText("");
+                lineNumbers.setVisible(false);
+            }
+            sourceCode.revalidate(); // added 16 Jan 2012 to assure label redrawn.
+            Globals.getSettings().setEditorLineNumbersDisplayed(showLineNumbers.isSelected());
+            // needed because caret disappears when checkbox clicked
+            sourceCode.setCaretVisible(true);
+            sourceCode.requestFocusInWindow();
+        });
 
         JPanel editInfo = new JPanel(new BorderLayout());
         caretPositionLabel = new JLabel();
@@ -182,18 +175,6 @@ public class EditPane extends JPanel implements Observer {
         editInfo.add(caretPositionLabel, BorderLayout.WEST);
         editInfo.add(showLineNumbers, BorderLayout.CENTER);
         this.add(editInfo, BorderLayout.SOUTH);
-    }
-
-
-    /**
-     * For initalizing the source code when opening an ASM file
-     *
-     * @param s        String containing text
-     * @param editable set true if code is editable else false
-     */
-
-    public void setSourceCode(String s, boolean editable) {
-        sourceCode.setSourceCode(s, editable);
     }
 
     /**
@@ -268,61 +249,18 @@ public class EditPane extends JPanel implements Observer {
 
 
     /**
-     * Set the editing status for this EditPane's associated document.
-     * For the argument, use one of the constants from class FileStatus.
+     * For initalizing the source code when opening an ASM file
      *
-     * @param FileStatus the status constant from class FileStatus
+     * @param s        String containing text
+     * @param editable set true if code is editable else false
      */
-    public void setFileStatus(int fileStatus) {
-        this.fileStatus.setFileStatus(fileStatus);
+    public void setSourceCode(String s, boolean editable) {
+        sourceCode.setSourceCode(s, editable);
     }
 
 
-    /**
-     * Get the editing status for this EditPane's associated document.
-     * This will be one of the constants from class FileStatus.
-     */
-
-    public int getFileStatus() {
-        return this.fileStatus.getFileStatus();
-    }
-
-    /**
-     * Delegates to corresponding FileStatus method
-     */
-    public String getFilename() {
-        return this.fileStatus.getFilename();
-    }
-
-
-    /**
-     * Delegates to corresponding FileStatus method
-     */
-    public String getPathname() {
-        return this.fileStatus.getPathname();
-    }
-
-
-    /**
-     * Delegates to corresponding FileStatus method
-     */
-    public void setPathname(String pathname) {
-        this.fileStatus.setPathname(pathname);
-    }
-
-    /**
-     * Delegates to corresponding FileStatus method
-     */
-    public boolean hasUnsavedEdits() {
-        return this.fileStatus.hasUnsavedEdits();
-    }
-
-
-    /**
-     * Delegates to corresponding FileStatus method
-     */
-    public boolean isNew() {
-        return this.fileStatus.isNew();
+    public FileStatus getFileStatus() {
+        return fileStatus;
     }
 
 

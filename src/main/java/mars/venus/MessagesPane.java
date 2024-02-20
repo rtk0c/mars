@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.nio.file.Path;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.swing.event.DocumentListener;
 import javax.swing.undo.UndoableEdit;
@@ -231,14 +232,15 @@ public class MessagesPane extends JTabbedPane {
     public void selectEditorTextLine(String fileName, int line, int column) {
         EditTabbedPane editTabbedPane = (EditTabbedPane) Globals.getGui().getMainPane().getEditTabbedPane();
         EditPane editPane, currentPane = null;
-        editPane = editTabbedPane.getEditPaneForFile(new java.io.File(fileName).getPath());
+        Path path = Path.of(fileName);
+        editPane =   editTabbedPane.getEditPaneForFile(path);
         if (editPane != null) {
             if (editPane != editTabbedPane.getCurrentEditTab()) {
                 editTabbedPane.setCurrentEditTab(editPane);
             }
             currentPane = editPane;
         } else {    // file is not open.  Try to open it.
-            if (editTabbedPane.openFile(new java.io.File(fileName))) {
+            if (editTabbedPane.openFile(path)) {
                 currentPane = editTabbedPane.getCurrentEditTab();
             }
         }

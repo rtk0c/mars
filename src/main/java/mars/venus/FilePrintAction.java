@@ -1,13 +1,8 @@
 package mars.venus;
 
-import mars.*;
-
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.*;
-import java.awt.print.*;
-import java.util.*;
 
  /*
 Copyright (c) 2003-2006,  Pete Sanderson and Kenneth Vollmar
@@ -63,7 +58,7 @@ public class FilePrintAction extends GuiAction {
         double margins = .5; // all margins (left,right,top,bottom) fixed at .5"
         HardcopyWriter out;
         try {
-            out = new HardcopyWriter(mainUI, editPane.getFilename(),
+            out = new HardcopyWriter(mainUI, editPane.getFileStatus().getFilename(),
                     fontsize, margins, margins, margins, margins);
         } catch (HardcopyWriter.PrintCanceledException pce) {
             return;
