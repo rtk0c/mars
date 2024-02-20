@@ -1,7 +1,11 @@
 [![Build Status](https://travis-ci.org/carlosrabelo/mars.png)](https://travis-ci.org/carlosrabelo/mars)
 
 # MARS Re-terraformed
-This is rtk0c's personal fork of MARS, with a set of changes unlikely/takes too long to be accepted upstream. An IntelliJ Idea buildsystem is also included in parallel with upstream's Gradle, intending for quicker iteration cycles. The `fork` branch corresponds to this custom form. The `master` branch which corresponds to upstream. Feature branches from `master` are intended to be submitted upstream.
+This is rtk0c's personal fork of MARS, with a set of changes unlikely/takes too long to be accepted upstream. An IntelliJ Idea buildsystem is included to replace upstream's Gradle, intending for quicker iteration cycles. The `fork` branch corresponds to this custom form. The `master` branch which corresponds to upstream. Feature branches from `master` are intended to be submitted upstream.
+
+To setup this project in IntelliJ: Open Project on the project root folder, and then right click `mars.iml` > Import Module. Then to go Project Settings and specify a SDK of at least Java 23.
+
+You can create a run configuration for MARS by creating an Application with main class as `Mars`. Nothing else needs to be changed.
 
 # MARS (MIPS Assembler and Runtime Simulator)
 
