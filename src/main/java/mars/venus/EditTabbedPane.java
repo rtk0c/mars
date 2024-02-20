@@ -220,42 +220,38 @@ public class EditTabbedPane extends JTabbedPane {
      * @return true if the file was actually saved.
      */
     public boolean saveCurrentFile() {
-        EditPane editPane = getCurrentEditTab();
-        if (saveFile(editPane)) {
-            FileStatus.setSaved(true);
-            FileStatus.setEdited(false);
-            FileStatus.set(FileStatus.NOT_EDITED);
-            editPane.getFileStatus().setFileStatus(FileStatus.NOT_EDITED);
-            updateTitlesAndMenuState(editPane);
-            return true;
-        }
-        return false;
+        return saveFile(getCurrentEditTab());
     }
 
     // Save file associatd with specified edit pane.
     // Returns true if save operation worked, else false.
     private boolean saveFile(EditPane editPane) {
-        if (editPane != null) {
-            if (editPane.getFileStatus().isNew()) {
-                File theFile = saveAsFile(editPane);
-                if (theFile != null) {
-                    editPane.getFileStatus().setPath(theFile.toPath());
-                }
-                return (theFile != null);
-            }
-            File theFile = new File(editPane.getFileStatus().getPathname());
-            try {
-                BufferedWriter outFileStream = new BufferedWriter(new FileWriter(theFile));
-                outFileStream.write(editPane.getSource(), 0, editPane.getSource().length());
-                outFileStream.close();
-            } catch (java.io.IOException c) {
-                JOptionPane.showMessageDialog(null, "Save operation could not be completed due to an error:\n" + c,
-                        "Save Operation Failed", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-            return true;
+        if (editPane == null) {
+            return false;
         }
-        return false;
+
+        var fs = editPane.getFileStatus();
+
+        if (fs.isNew()) {
+            Path path = saveAsFile(editPane);
+            return (path != null);
+        }
+
+        try {
+            Files.writeString(fs.getPath(), editPane.getSource());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Save operation could not be completed due to an error:\n" + e,
+                    "Save Operation Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        FileStatus.setSaved(true);
+        FileStatus.setEdited(false);
+        FileStatus.set(FileStatus.NOT_EDITED);
+        fs.setFileStatus(FileStatus.NOT_EDITED);
+        updateTitlesAndMenuState(editPane);
+
+        return true;
     }
 
 
@@ -266,88 +262,83 @@ public class EditTabbedPane extends JTabbedPane {
      * @return true if the file was actually saved.
      */
     public boolean saveAsCurrentFile() {
-        EditPane editPane = getCurrentEditTab();
-        File theFile = saveAsFile(editPane);
-        if (theFile != null) {
-            FileStatus.setFile(theFile);
-            FileStatus.setName(theFile.getPath());
-            FileStatus.setSaved(true);
-            FileStatus.setEdited(false);
-            FileStatus.set(FileStatus.NOT_EDITED);
-            editor.setCurrentSaveDirectory(theFile.getParent());
-            editPane.getFileStatus().setPath(theFile.toPath());
-            editPane.getFileStatus().setFileStatus(FileStatus.NOT_EDITED);
-            updateTitlesAndMenuState(editPane);
-            return true;
-        }
-        return false;
+        Path path = saveAsFile(getCurrentEditTab());
+        return path != null;
     }
 
-    // perform Save As for selected edit pane.  If the save is performed,
-    // return its File object.  Otherwise return null.
-    private File saveAsFile(EditPane editPane) {
-        File theFile = null;
-        if (editPane != null) {
-            JFileChooser saveDialog = null;
-            boolean operationOK = false;
-            while (!operationOK) {
-                // Set Save As dialog directory in a logical way.  If file in
-                // edit pane had been previously saved, default to its directory.
-                // If a new file (mipsN.asm), default to current save directory.
-                // DPS 13-July-2011
-                if (editPane.getFileStatus().isNew()) {
-                    saveDialog = new JFileChooser(editor.getCurrentSaveDirectory());
-                } else {
-                    File f = new File(editPane.getFileStatus().getPathname());
-                    if (f != null) {
-                        saveDialog = new JFileChooser(f.getParent());
-                    } else {
-                        saveDialog = new JFileChooser(editor.getCurrentSaveDirectory());
-                    }
-                }
-                String paneFile = editPane.getFileStatus().getFilename();
-                if (paneFile != null) saveDialog.setSelectedFile(new File(paneFile));
-                // end of 13-July-2011 code.
-                saveDialog.setDialogTitle("Save As");
+    /**
+     * Perform Save As for selected edit pane. If the save is performed, update the EditPane to be consistent with the
+     * new path and return its Path object. Otherwise, return null.
+     */
+    private Path saveAsFile(EditPane editPane) {
+        if (editPane == null) {
+            return null;
+        }
 
-                int decision = saveDialog.showSaveDialog(mainUI);
-                if (decision != JFileChooser.APPROVE_OPTION) {
-                    return null;
-                }
-                theFile = saveDialog.getSelectedFile();
-                operationOK = true;
-                if (theFile.exists()) {
-                    int overwrite = JOptionPane.showConfirmDialog(mainUI,
-                            "File " + theFile.getName() + " already exists.  Do you wish to overwrite it?",
-                            "Overwrite existing file?",
-                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-                    switch (overwrite) {
-                        case JOptionPane.YES_OPTION:
-                            operationOK = true;
-                            break;
-                        case JOptionPane.NO_OPTION:
-                            operationOK = false;
-                            break;
-                        case JOptionPane.CANCEL_OPTION:
-                            return null;
-                        default: // should never occur
-                            return null;
-                    }
-                }
-            }
-            // Either file with selected name does not exist or user wants to
-            // overwrite it, so go for it!
-            try {
-                BufferedWriter outFileStream = new BufferedWriter(new FileWriter(theFile));
-                outFileStream.write(editPane.getSource(), 0, editPane.getSource().length());
-                outFileStream.close();
-            } catch (java.io.IOException c) {
-                JOptionPane.showMessageDialog(null, "Save As operation could not be completed due to an error:\n" + c,
-                        "Save As Operation Failed", JOptionPane.ERROR_MESSAGE);
+        Path path;
+        JFileChooser saveDialog;
+        // Set Save As dialog directory in a logical way.  If file in
+        // edit pane had been previously saved, default to its directory.
+        // If a new file (mipsN.asm), default to current save directory.
+        // DPS 13-July-2011
+        if (editPane.getFileStatus().isNew()) {
+            saveDialog = new JFileChooser(editor.getCurrentSaveDirectory());
+        } else {
+            File f = new File(editPane.getFileStatus().getPathname());
+            saveDialog = new JFileChooser(f.getParent());
+        }
+
+        String paneFile = editPane.getFileStatus().getFilename();
+        if (paneFile != null) saveDialog.setSelectedFile(new File(paneFile));
+        // end of 13-July-2011 code.
+        saveDialog.setDialogTitle("Save As");
+
+        retryLoop:
+        while (true) {
+            int decision = saveDialog.showSaveDialog(mainUI);
+            if (decision != JFileChooser.APPROVE_OPTION) {
                 return null;
             }
+
+            path = saveDialog.getSelectedFile().toPath();
+            if (Files.exists(path)) {
+                int overwrite = JOptionPane.showConfirmDialog(mainUI,
+                        "File " + path + " already exists.  Do you wish to overwrite it?",
+                        "Overwrite existing file?",
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                switch (overwrite) {
+                    case JOptionPane.YES_OPTION:
+                        break retryLoop;
+                    case JOptionPane.NO_OPTION:
+                        continue retryLoop;
+                    case JOptionPane.CANCEL_OPTION:
+                        return null;
+                }
+            }
         }
-        return theFile;
+
+        // Either file with selected name does not exist or user wants to
+        // overwrite it, so go for it!
+        try {
+            Files.writeString(path, editPane.getSource());
+        } catch (java.io.IOException c) {
+            JOptionPane.showMessageDialog(null, "Save As operation could not be completed due to an error:\n" + c,
+                    "Save As Operation Failed", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
+        FileStatus.setFile(path.toFile());
+        FileStatus.setName(path.toString());
+        FileStatus.setSaved(true);
+        FileStatus.setEdited(false);
+        FileStatus.set(FileStatus.NOT_EDITED);
+        editor.setCurrentSaveDirectory(path.getParent().toString());
+        var fs = editPane.getFileStatus();
+        fs.setPath(path);
+        fs.setFileStatus(FileStatus.NOT_EDITED);
+        updateTitlesAndMenuState(editPane);
+
+        return path;
     }
 
 
@@ -358,33 +349,9 @@ public class EditTabbedPane extends JTabbedPane {
      */
     public boolean saveAllFiles() {
         boolean result = false;
-        int tabCount = getTabCount();
-        if (tabCount > 0) {
-
-            result = true;
-            EditPane[] tabs = new EditPane[tabCount];
-            EditPane savedPane = getCurrentEditTab();
-            for (int i = 0; i < tabCount; i++) {
-                tabs[i] = (EditPane) getComponentAt(i);
-                if (tabs[i].getFileStatus().hasUnsavedEdits()) {
-                    setCurrentEditTab(tabs[i]);
-                    if (saveFile(tabs[i])) {
-                        tabs[i].getFileStatus().setFileStatus(FileStatus.NOT_EDITED);
-                        editor.setTitle(tabs[i].getFileStatus().getPathname(), tabs[i].getFileStatus().getFilename(), tabs[i].getFileStatus().getFileStatus());
-                    } else {
-                        result = false;
-                    }
-                }
-            }
-            setCurrentEditTab(savedPane);
-            if (result) {
-                EditPane editPane = getCurrentEditTab();
-                FileStatus.setSaved(true);
-                FileStatus.setEdited(false);
-                FileStatus.set(FileStatus.NOT_EDITED);
-                editPane.getFileStatus().setFileStatus(FileStatus.NOT_EDITED);
-                updateTitlesAndMenuState(editPane);
-            }
+        for (int i = 0; i < getTabCount(); i++) {
+            var editPane = (EditPane) getComponentAt(i);
+            result |= saveFile(editPane);
         }
         return result;
     }
@@ -620,21 +587,21 @@ public class EditTabbedPane extends JTabbedPane {
     }
 
 
-    // Private method to generate the file chooser's list of choosable file filters.
-    // It is called when the file chooser is created, and called again each time the Open
-    // dialog is activated.  We do this because the user may have added a new filter
-    // during the previous dialog.  This can be done by entering e.g. *.txt in the file
-    // name text field.  Java is funny, however, in that if the user does this then
-    // cancels the dialog, the new filter will remain in the list BUT if the user does
-    // this then ACCEPTS the dialog, the new filter will NOT remain in the list.  However
-    // the act of entering it causes a property change event to occur, and we have a
-    // handler that will add the new filter to our internal filter list and "restore" it
-    // the next time this method is called.  Strangely, if the user then similarly
-    // adds yet another new filter, the new one becomes simply a description change
-    // to the previous one, the previous object is modified AND NO PROPERTY CHANGE EVENT
-    // IS FIRED!  I could obviously deal with this situation if I wanted to, but enough
-    // is enough.  The limit will be one alternative filter at a time.
-    // DPS... 9 July 2008
+// Private method to generate the file chooser's list of choosable file filters.
+// It is called when the file chooser is created, and called again each time the Open
+// dialog is activated.  We do this because the user may have added a new filter
+// during the previous dialog.  This can be done by entering e.g. *.txt in the file
+// name text field.  Java is funny, however, in that if the user does this then
+// cancels the dialog, the new filter will remain in the list BUT if the user does
+// this then ACCEPTS the dialog, the new filter will NOT remain in the list.  However
+// the act of entering it causes a property change event to occur, and we have a
+// handler that will add the new filter to our internal filter list and "restore" it
+// the next time this method is called.  Strangely, if the user then similarly
+// adds yet another new filter, the new one becomes simply a description change
+// to the previous one, the previous object is modified AND NO PROPERTY CHANGE EVENT
+// IS FIRED!  I could obviously deal with this situation if I wanted to, but enough
+// is enough.  The limit will be one alternative filter at a time.
+// DPS... 9 July 2008
 
     private void setChoosableFileFilters() {
         // See if a new filter has been added to the master list.  If so,
