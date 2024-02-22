@@ -3,6 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/mars_reterraformed</output-path>
     <root id="archive" name="mars_reterraformed.jar">
       <element id="module-output" name="mars" />
+      <element id="module-output" name="modern-docking" />
     </root>
   </artifact>
 </component>
