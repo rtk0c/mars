@@ -51,7 +51,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  **/
 
 public class EditTabbedPane extends JTabbedPane {
-    EditPane editTab;
     MainPane mainPane;
 
     private VenusUI mainUI;
@@ -314,6 +313,8 @@ public class EditTabbedPane extends JTabbedPane {
                     case JOptionPane.CANCEL_OPTION:
                         return null;
                 }
+            } else {
+                break;
             }
         }
 
@@ -334,9 +335,14 @@ public class EditTabbedPane extends JTabbedPane {
         FileStatus.set(FileStatus.NOT_EDITED);
         editor.setCurrentSaveDirectory(path.getParent().toString());
         var fs = editPane.getFileStatus();
+        var oldPath = fs.getPath();
+        var newPath = path;
         fs.setPath(path);
         fs.setFileStatus(FileStatus.NOT_EDITED);
         updateTitlesAndMenuState(editPane);
+
+        currentOpenFiles.remove(oldPath);
+        currentOpenFiles.put(newPath, editPane);
 
         return path;
     }
@@ -380,16 +386,18 @@ public class EditTabbedPane extends JTabbedPane {
     // Handy little utility to update the title on the current tab and the frame title bar
     // and also to update the MARS menu state (controls which actions are enabled).
     private void updateTitlesAndMenuState(EditPane editPane) {
-        editor.setTitle(editPane.getFileStatus().getPathname(), editPane.getFileStatus().getFilename(), editPane.getFileStatus().getFileStatus());
+        FileStatus fs = editPane.getFileStatus();
+        editor.setTitle(fs.getPathname(), fs.getFilename(), fs.getFileStatus());
         editPane.updateStaticFileStatus(); //  for legacy code that depends on the static FileStatus (pre 4.0)
-        Globals.getGui().setMenuState(editPane.getFileStatus().getFileStatus());
+        Globals.getGui().setMenuState(fs.getFileStatus());
     }
 
     // Handy little utility to update the title on the current tab and the frame title bar
     // and also to update the MARS menu state (controls which actions are enabled).
     // DPS 9-Aug-2011
     private void updateTitles(EditPane editPane) {
-        editor.setTitle(editPane.getFileStatus().getPathname(), editPane.getFileStatus().getFilename(), editPane.getFileStatus().getFileStatus());
+        FileStatus fs = editPane.getFileStatus();
+        editor.setTitle(fs.getPathname(), fs.getFilename(), fs.getFileStatus());
         boolean assembled = FileStatus.isAssembled();
         editPane.updateStaticFileStatus(); //  for legacy code that depends on the static FileStatus (pre 4.0)
         FileStatus.setAssembled(assembled);
