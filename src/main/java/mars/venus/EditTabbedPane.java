@@ -6,6 +6,7 @@ import mars.util.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.datatransfer.*;
@@ -211,6 +212,18 @@ public class EditTabbedPane extends JTabbedPane {
             result |= closeCurrentFile();
         }
         return result;
+    }
+
+    private void closeFile(EditPane file) {
+        this.remove(file);
+
+        var fs = file.getFileStatus();
+        currentOpenFiles.remove(fs.getPath());
+
+        if (ws != null) {
+            if (fs.fileWatchKey != null)
+                fs.fileWatchKey.cancel();
+        }
     }
 
     /**
@@ -441,14 +454,52 @@ public class EditTabbedPane extends JTabbedPane {
     }
 
 
+    private int confirm(String name) {
+        return JOptionPane.showConfirmDialog(mainUI,
+                "Changes to " + name + " will be lost unless you save.  Do you wish to save all changes now?",
+                "Save program changes?",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+    }
+
+
+    private WatchService ws;
+    private Timer wsTimer;
     private HashMap<Path, EditPane> currentOpenFiles;
-    private Path mostRecentlyOpenedFile;
+    private File mostRecentlyOpenedFile;
     private JFileChooser fileChooser;
     private int fileFilterCount;
     private ArrayList<FileFilter> fileFilterList;
     private PropertyChangeListener listenForUserAddedFileFilter;
 
     public void initFileOpener() {
+        try {
+            ws = FileSystems.getDefault().newWatchService();
+            // We use a timer to poll for file changes
+            // It could be done with a separate thread and some kind of event bus
+            // 10 seconds
+            wsTimer = new Timer(10000, (ActionEvent e) -> {
+                assert ws != null;
+
+                WatchKey key;
+                while ((key = ws.poll()) != null) {
+                    for (var event : key.pollEvents()) {
+                        if (event.kind() != StandardWatchEventKinds.ENTRY_MODIFY)
+                            continue;
+
+                        @SuppressWarnings("unchecked")
+                        var ev = (WatchEvent<Path>) event;
+                        var path = ev.context();
+                        // TODO get the editor pane, (1) update editor content (2) update MIPSSource content
+                    }
+                    key.reset();
+                }
+            });
+            wsTimer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Leave this.ws as null, disable watch service
+            // Note if WatchService construction failed, the timer will not be initialized at all
+        }
         this.currentOpenFiles = new HashMap<>();
         this.mostRecentlyOpenedFile = null;
         this.fileChooser = new JFileChooser();
@@ -590,6 +641,17 @@ public class EditTabbedPane extends JTabbedPane {
             mostRecentlyOpenedFile = theFile;
 
             currentOpenFiles.put(theFile, editPane);
+            
+            if (ws != null) {
+                WatchKey key;
+                try {
+                    key = theFile.register(ws, StandardWatchEventKinds.ENTRY_MODIFY);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return true;
+                }
+                editPane.getFileStatus().fileWatchKey = key;
+            }
         }
         return true;
     }
