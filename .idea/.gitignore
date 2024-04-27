@@ -1,7 +1,8 @@
 # Everything
-# modules.xml, etc. are regeneratable by IDEA
+# misc.xml, etc. are regeneratable by IDEA
 # vcs.xml, etc. arean't that important so it's best to let people decide for themselves
 /*
 !.gitignore
 # Share how to build the artifacts
 !artifacts
+!modules.xml
